@@ -125,6 +125,10 @@ let keychainDocResources = [
     "Keychain",
 ].map(docResource)
 
+let iCloudKVDocResources = [
+    "ICloudKV",
+].map(docResource)
+
 let coreMotionDocResources = [
     "CMAbsoluteAltitudeData",
     "CMAccelerometerData",
@@ -206,6 +210,11 @@ let package = Package(
             type: .dynamic,
             targets: ["GodotApplePluginsKeychain"]
         ),
+        .library(
+            name: "GodotApplePluginsICloudKV",
+            type: .dynamic,
+            targets: ["GodotApplePluginsICloudKV"]
+        ),
         .executable(
             name: "GodotApplePluginsStubGenerator",
             targets: ["GodotApplePluginsStubGenerator"]
@@ -229,6 +238,7 @@ let package = Package(
                 "GodotApplePluginsARKit",
                 "GodotApplePluginsCoreMotion",
                 "GodotApplePluginsKeychain",
+                "GodotApplePluginsICloudKV",
             ],
             path: "Sources/GodotApplePlugins",
             swiftSettings: swiftSettings,
@@ -282,6 +292,11 @@ let package = Package(
             path: "Sources/GodotKeychain",
             exclude: ["KeychainGuide.md"],
             resources: keychainDocResources
+        ),
+        pluginTarget(
+            name: "GodotApplePluginsICloudKV",
+            path: "Sources/GodotICloudKV",
+            resources: iCloudKVDocResources
         ),
         .executableTarget(
             name: "GodotApplePluginsStubGenerator"

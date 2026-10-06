@@ -8,7 +8,7 @@ DERIVED_DATA ?= $(CURDIR)/.xcodebuild
 WORKSPACE ?= .swiftpm/xcode/package.xcworkspace
 SCHEME ?= GodotApplePlugins
 FRAMEWORK_NAMES ?= GodotApplePlugins
-SPLIT_FRAMEWORK_NAMES ?= GodotApplePluginsAVFoundation GodotApplePluginsFoundation GodotApplePluginsGameCenter GodotApplePluginsStoreKit GodotApplePluginsAuthenticationServices GodotApplePluginsARKit GodotApplePluginsCoreMotion GodotApplePluginsKeychain
+SPLIT_FRAMEWORK_NAMES ?= GodotApplePluginsAVFoundation GodotApplePluginsFoundation GodotApplePluginsGameCenter GodotApplePluginsStoreKit GodotApplePluginsAuthenticationServices GodotApplePluginsARKit GodotApplePluginsCoreMotion GodotApplePluginsKeychain GodotApplePluginsICloudKV
 SPLIT_RUNTIME_FRAMEWORK ?= SwiftGodotRuntime
 SPLIT_RUNTIME_RPATH ?= @loader_path/../../../../../GodotApplePluginsRuntime/bin
 SPLIT_RUNTIME_FRAMEWORK_RPATH ?= @loader_path/../../../GodotApplePluginsRuntime/bin
@@ -218,6 +218,11 @@ split-generate-stubs:
 				library_name="godot_apple_plugins_keychain_stub"; \
 				files="Keychain"; \
 				;; \
+			GodotApplePluginsICloudKV) \
+				entry_symbol="godot_apple_plugins_icloud_kv_start"; \
+				library_name="godot_apple_plugins_icloud_kv_stub"; \
+				files="ICloudKV"; \
+				;; \
 			*) \
 				echo "Unknown split framework $$framework" >&2; \
 				exit 1; \
@@ -255,20 +260,22 @@ split-dist:
 		-framework "$$runtime_ios_device" \
 		-framework "$$runtime_ios_sim" \
 		-output $(CURDIR)/addons/GodotApplePluginsRuntime/bin/$(SPLIT_RUNTIME_FRAMEWORK).xcframework; \
-	if [ ! -d "$(DERIVED_DATA)x86_64/Build/Products/$(CONFIG)/PackageFrameworks/$(SPLIT_RUNTIME_FRAMEWORK).framework" ]; then \
-		echo "Missing $(SPLIT_RUNTIME_FRAMEWORK) macOS x86_64 build product. Run split-build for platform=macOS,arch=x86_64 before split-dist." >&2; \
-		exit 1; \
-	fi; \
-	rsync -a $(DERIVED_DATA)x86_64/Build/Products/$(CONFIG)/PackageFrameworks/$(SPLIT_RUNTIME_FRAMEWORK).framework/ $(CURDIR)/addons/GodotApplePluginsRuntime/bin/$(SPLIT_RUNTIME_FRAMEWORK)_x64.framework; \
-	runtime_x64_binary="$(CURDIR)/addons/GodotApplePluginsRuntime/bin/$(SPLIT_RUNTIME_FRAMEWORK)_x64.framework/Versions/A/$(SPLIT_RUNTIME_FRAMEWORK)"; \
-	if [ ! -f "$$runtime_x64_binary" ]; then \
-		echo "Missing $(SPLIT_RUNTIME_FRAMEWORK) macOS x86_64 runtime binary: $$runtime_x64_binary" >&2; \
-		exit 1; \
-	fi; \
-	install_name_tool -id "$(SPLIT_X64_RUNTIME_LOAD_DYLIB)" "$$runtime_x64_binary"; \
-	if ! otool -D "$$runtime_x64_binary" | grep -Fq "$(SPLIT_X64_RUNTIME_LOAD_DYLIB)"; then \
-		echo "Failed to set x86_64 runtime install name on $$runtime_x64_binary" >&2; \
-		exit 1; \
+	if [ "$(SKIP_MACOS_X64)" != "1" ]; then \
+		if [ ! -d "$(DERIVED_DATA)x86_64/Build/Products/$(CONFIG)/PackageFrameworks/$(SPLIT_RUNTIME_FRAMEWORK).framework" ]; then \
+			echo "Missing $(SPLIT_RUNTIME_FRAMEWORK) macOS x86_64 build product. Run split-build for platform=macOS,arch=x86_64 before split-dist." >&2; \
+			exit 1; \
+		fi; \
+		rsync -a $(DERIVED_DATA)x86_64/Build/Products/$(CONFIG)/PackageFrameworks/$(SPLIT_RUNTIME_FRAMEWORK).framework/ $(CURDIR)/addons/GodotApplePluginsRuntime/bin/$(SPLIT_RUNTIME_FRAMEWORK)_x64.framework; \
+		runtime_x64_binary="$(CURDIR)/addons/GodotApplePluginsRuntime/bin/$(SPLIT_RUNTIME_FRAMEWORK)_x64.framework/Versions/A/$(SPLIT_RUNTIME_FRAMEWORK)"; \
+		if [ ! -f "$$runtime_x64_binary" ]; then \
+			echo "Missing $(SPLIT_RUNTIME_FRAMEWORK) macOS x86_64 runtime binary: $$runtime_x64_binary" >&2; \
+			exit 1; \
+		fi; \
+		install_name_tool -id "$(SPLIT_X64_RUNTIME_LOAD_DYLIB)" "$$runtime_x64_binary"; \
+		if ! otool -D "$$runtime_x64_binary" | grep -Fq "$(SPLIT_X64_RUNTIME_LOAD_DYLIB)"; then \
+			echo "Failed to set x86_64 runtime install name on $$runtime_x64_binary" >&2; \
+			exit 1; \
+		fi; \
 	fi; \
 	if [ ! -d "$(DERIVED_DATA)arm64/Build/Products/$(CONFIG)/PackageFrameworks/$(SPLIT_RUNTIME_FRAMEWORK).framework" ]; then \
 		echo "Missing $(SPLIT_RUNTIME_FRAMEWORK) macOS arm64 build product. Run split-build for platform=macOS,arch=arm64 before split-dist." >&2; \
@@ -343,12 +350,14 @@ split-dist:
 			echo "Missing macOS arm64 split framework binary: $$binary_arm" >&2; \
 			exit 1; \
 		fi; \
-		if [ ! -f "$$binary_x64" ]; then \
-			echo "Missing macOS x86_64 split framework binary: $$binary_x64" >&2; \
-			exit 1; \
-		fi; \
 		set_runtime_rpath "$$binary_arm" "$(DERIVED_DATA)arm64/Build/Products/$(CONFIG)/PackageFrameworks" "$(SPLIT_RUNTIME_FRAMEWORK).framework" "$(SPLIT_RUNTIME_LOAD_DYLIB)"; \
-		set_runtime_rpath "$$binary_x64" "$(DERIVED_DATA)x86_64/Build/Products/$(CONFIG)/PackageFrameworks" "$(SPLIT_RUNTIME_FRAMEWORK)_x64.framework" "$(SPLIT_X64_RUNTIME_LOAD_DYLIB)"; \
+		if [ "$(SKIP_MACOS_X64)" != "1" ]; then \
+			if [ ! -f "$$binary_x64" ]; then \
+				echo "Missing macOS x86_64 split framework binary: $$binary_x64" >&2; \
+				exit 1; \
+			fi; \
+			set_runtime_rpath "$$binary_x64" "$(DERIVED_DATA)x86_64/Build/Products/$(CONFIG)/PackageFrameworks" "$(SPLIT_RUNTIME_FRAMEWORK)_x64.framework" "$(SPLIT_X64_RUNTIME_LOAD_DYLIB)"; \
+		fi; \
 	done
 
 split-package: split-build split-dist
@@ -409,6 +418,9 @@ dist:
 				;; \
 			GodotApplePluginsKeychain) \
 				registration_source="Sources/GodotKeychain/GodotKeychain.swift"; \
+				;; \
+			GodotApplePluginsICloudKV) \
+				registration_source="Sources/GodotICloudKV/GodotICloudKV.swift"; \
 				;; \
 			*) \
 				registration_source=""; \

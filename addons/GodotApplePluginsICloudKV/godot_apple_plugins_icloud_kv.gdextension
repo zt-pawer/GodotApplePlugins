@@ -1,0 +1,12 @@
+[configuration]
+
+entry_symbol = "godot_apple_plugins_icloud_kv_start"
+compatibility_minimum = 4.2
+
+[libraries]
+ios = "res://addons/GodotApplePluginsICloudKV/bin/GodotApplePluginsICloudKV.xcframework"
+macos.arm64 = "res://addons/GodotApplePluginsICloudKV/bin/GodotApplePluginsICloudKV.framework"
+
+[dependencies]
+ios = { "res://addons/GodotApplePluginsRuntime/bin/SwiftGodotRuntime.xcframework": "" }
+macos.arm64 = { "res://addons/GodotApplePluginsRuntime/bin/SwiftGodotRuntime.framework": "" }

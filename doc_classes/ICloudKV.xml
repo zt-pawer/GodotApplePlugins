@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ICloudKV" inherits="RefCounted" api_type="extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		Reads and writes small values to iCloud Key-Value Storage.
+	</brief_description>
+	<description>
+		Stores values in [code]NSUbiquitousKeyValueStore[/code], Apple's small per-account iCloud key-value store. Values sync across a user's devices signed into the same iCloud account and survive a fresh install, making this the right place for preferences that should follow the user rather than the device.
+
+		[codeblocks]
+		[gdscript]
+		var cloud_kv = ICloudKV.new()
+
+		func _save_settings(json_string):
+		    if not cloud_kv.set_value("settings", json_string):
+		        print("Failed to write to iCloud key-value store")
+
+		func _load_settings():
+		    return cloud_kv.get_value("settings")
+		[/gdscript]
+		[/codeblocks]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_value">
+			<return type="String" />
+			<param index="0" name="key" type="String" />
+			<description>
+				Returns the value stored under [param key], or an empty string if no value exists for that key.
+			</description>
+		</method>
+		<method name="set_value">
+			<return type="bool" />
+			<param index="0" name="key" type="String" />
+			<param index="1" name="value" type="String" />
+			<description>
+				Stores [param value] under [param key], overwriting any existing value, and requests an immediate synchronize. Returns [code]true[/code] on success.
+			</description>
+		</method>
+	</methods>
+</class>

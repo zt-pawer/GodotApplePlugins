@@ -5,6 +5,7 @@ import GodotApplePluginsAVFoundation
 import GodotApplePluginsCoreMotion
 import GodotApplePluginsFoundation
 import GodotApplePluginsGameCenter
+import GodotApplePluginsICloudKV
 import GodotApplePluginsKeychain
 import GodotApplePluginsStoreKit
 
@@ -18,6 +19,7 @@ private let godotApplePluginsMinimumInitializationLevel: ExtensionInitialization
         godotApplePluginsARKitMinimumInitializationLevel,
         godotApplePluginsCoreMotionMinimumInitializationLevel,
         godotApplePluginsKeychainMinimumInitializationLevel,
+        godotApplePluginsICloudKVMinimumInitializationLevel,
     ].min(by: { $0.rawValue < $1.rawValue }) ?? .scene
 }()
 
@@ -30,9 +32,11 @@ public func godotApplePluginsInitialize(level: ExtensionInitializationLevel) {
     godotApplePluginsARKitInitialize(level: level)
     godotApplePluginsCoreMotionInitialize(level: level)
     godotApplePluginsKeychainInitialize(level: level)
+    godotApplePluginsICloudKVInitialize(level: level)
 }
 
 public func godotApplePluginsDeinitialize(level: ExtensionInitializationLevel) {
+    godotApplePluginsICloudKVDeinitialize(level: level)
     godotApplePluginsKeychainDeinitialize(level: level)
     godotApplePluginsCoreMotionDeinitialize(level: level)
     godotApplePluginsARKitDeinitialize(level: level)
